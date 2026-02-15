@@ -449,85 +449,81 @@ async function sendAll() {
 
     state.sending = true;
     els.sendBtn.classList.add('sending');
-    els.sendBtnText.textContent = 'Sending...';
+    els.sendBtnText.textContent = 'Sending Batch...';
     els.progressBar.classList.remove('hidden');
     els.progressText.classList.remove('hidden');
     els.logSection.classList.remove('hidden');
     updateSendBtn();
 
-    let completed = 0;
-    let succeeded = 0;
-    let failed = 0;
     const total = state.recipients.length;
+    addLog(`Preparing batch send for ${total} recipients (Single Signature)...`, 'info');
 
-    addLog(`Starting batch send to ${total} recipients...`, 'info');
+    try {
+        const addresses = [];
+        const amounts = [];
 
-    for (let i = 0; i < total; i++) {
-        const recipient = state.recipients[i];
-        recipient.status = 'sending';
-        updateRow(i);
+        for (let i = 0; i < total; i++) {
+            const recipient = state.recipients[i];
+            recipient.status = 'sending';
+            updateRow(i);
 
-        try {
-            // Convert amount to veins (smallest unit, integer)
-            const amountInVeins = BigInt(Math.round(recipient.amount * EDS_UNIT));
-
-            // Resolve recipient address — the SDK uses Base58 for AccountAddress
-            let recipientAddr;
-            if (recipient.address.startsWith('0x')) {
-                // Hex address - use directly in functionArguments
-                recipientAddr = recipient.address;
-            } else {
-                // Assume Base58
-                recipientAddr = recipient.address;
+            // Convert address to hex string
+            let hexAddr = recipient.address;
+            if (!hexAddr.startsWith('0x')) {
+                try {
+                    hexAddr = AccountAddress.fromBs58String(hexAddr).toString();
+                } catch (e) {
+                    // fallback to original
+                }
             }
 
-            // Build payload using signAndSubmitTransaction
-            const transferData = {
-                payload: {
-                    function: '0x1::endless_account::transfer',
-                    functionArguments: [recipientAddr, amountInVeins.toString()],
-                },
-            };
+            addresses.push(hexAddr);
+            amounts.push(BigInt(Math.round(recipient.amount * EDS_UNIT)).toString());
+        }
 
-            const transactionRes = await jssdk.signAndSubmitTransaction(transferData);
+        // Build batch payload
+        const batchData = {
+            payload: {
+                function: '0x1::endless_account::batch_transfer',
+                functionArguments: [addresses, amounts],
+            },
+        };
 
-            if (transactionRes.status === UserResponseStatus.APPROVED) {
-                const txHash = transactionRes.args?.hash || transactionRes.args?.toString() || '';
-                recipient.status = 'success';
-                recipient.txHash = txHash;
-                succeeded++;
+        const transactionRes = await jssdk.signAndSubmitTransaction(batchData);
 
-                addLog(
-                    `#${i + 1} → ${shortAddr(recipient.address)}: ${recipient.amount} EDS ` +
-                    (txHash ?
-                        `<a href="${NETWORKS[state.network].explorerUrl}/txn/${txHash}" target="_blank">View Tx ↗</a>` : '✓'),
-                    'success'
-                );
-            } else {
-                throw new Error('Transaction rejected by user');
-            }
-        } catch (err) {
-            console.error(`Transfer ${i + 1} error:`, err);
-            recipient.status = 'error';
-            failed++;
+        if (transactionRes.status === UserResponseStatus.APPROVED) {
+            const txHash = transactionRes.args?.hash || transactionRes.args?.toString() || '';
+
+            // Mark all as success
+            state.recipients.forEach((r, i) => {
+                r.status = 'success';
+                r.txHash = txHash;
+                updateRow(i);
+            });
+
+            els.progressFill.style.width = '100%';
+            els.progressText.textContent = `Batch sent successfully! ${total}/${total} processed.`;
 
             addLog(
-                `#${i + 1} → ${shortAddr(recipient.address)}: Failed — ${err.message || 'Transaction rejected'}`,
-                'error'
+                `Batch transaction successful! ` +
+                (txHash ? `<a href="${NETWORKS[state.network].explorerUrl}/txn/${txHash}" target="_blank">View Transaction ↗</a>` : ''),
+                'success'
             );
+            showToast(`Batch send complete: ${total} successful`, 'success', 6000);
+        } else {
+            throw new Error('Transaction rejected by user');
         }
+    } catch (err) {
+        console.error('Batch transfer error:', err);
 
-        completed++;
-        updateRow(i);
+        // Mark all as error
+        state.recipients.forEach((r, i) => {
+            r.status = 'error';
+            updateRow(i);
+        });
 
-        const pct = Math.round((completed / total) * 100);
-        els.progressFill.style.width = `${pct}%`;
-        els.progressText.textContent = `${completed}/${total} transactions processed (${succeeded} ✅ ${failed} ❌)`;
-
-        // Small delay between transactions
-        if (i < total - 1) {
-            await sleep(800);
-        }
+        addLog(`Batch failed: ${err.message || 'Unknown error'}`, 'error');
+        showToast(`Batch failed: ${err.message || 'Unknown error'}`, 'error');
     }
 
     // Done
@@ -535,12 +531,6 @@ async function sendAll() {
     els.sendBtn.classList.remove('sending');
     els.sendBtnText.textContent = 'Send All Transactions';
     updateSendBtn();
-
-    addLog(
-        `Batch complete: ${succeeded} succeeded, ${failed} failed out of ${total}`,
-        succeeded === total ? 'success' : 'info'
-    );
-    showToast(`Batch send complete: ${succeeded}/${total} successful`, succeeded === total ? 'success' : 'info', 6000);
 
     // Refresh balance
     await fetchBalance();
