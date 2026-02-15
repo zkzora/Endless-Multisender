@@ -2,8 +2,6 @@
 
 A premium, simple, and efficient multisender website for the Endless ($EDS) blockchain. Send tokens to multiple addresses in one batch transaction using the official Endless Web3 SDK.
 
-![Endless Multisender Logo](/public/logo.png)
-
 ## Features
 
 - **Endless Web3 SDK Integration**: Built with the latest @endlesslab/endless-web3-sdk for seamless embedded wallet connectivity.
