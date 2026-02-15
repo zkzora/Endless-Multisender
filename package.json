@@ -1,0 +1,19 @@
+{
+  "name": "endless-multisender",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Multisender for Endless ($EDS) blockchain - Send tokens to multiple addresses at once",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@endlesslab/endless-ts-sdk": "^1.0.0",
+    "@endlesslab/endless-web3-sdk": "^1.0.0"
+  },
+  "devDependencies": {
+    "vite": "^5.4.0"
+  }
+}
