@@ -10,13 +10,13 @@ const NETWORKS = {
         name: 'Mainnet',
         key: Network.MAINNET,
         rpcUrl: 'https://rpc.endless.link/v1',
-        explorerUrl: 'https://explorer.endless.link',
+        explorerUrl: 'https://scan.endless.link',
     },
     testnet: {
         name: 'Testnet',
         key: Network.TESTNET,
         rpcUrl: 'https://rpc-test.endless.link/v1',
-        explorerUrl: 'https://explorer-test.endless.link',
+        explorerUrl: 'https://scan.endless.link',
     },
 };
 
