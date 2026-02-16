@@ -2,7 +2,7 @@
 // Uses @endlesslab/endless-web3-sdk (embedded web wallet — no extension required)
 
 import { EndlessJsSdk, UserResponseStatus, EndLessSDKEvent } from '@endlesslab/endless-web3-sdk';
-import { Network, AccountAddress } from '@endlesslab/endless-ts-sdk';
+import { Endless, Network, EndlessConfig, AccountAddress } from '@endlesslab/endless-ts-sdk';
 
 // ===== CONSTANTS =====
 const NETWORKS = {
@@ -279,42 +279,15 @@ async function fetchBalance() {
     try {
         const network = NETWORKS[state.network];
 
-        // Convert Base58 address to hex for REST API if needed
-        let apiAddress = state.walletAddress;
-        // If the address looks like base58, try to convert using AccountAddress
-        if (!apiAddress.startsWith('0x')) {
-            try {
-                const accAddr = AccountAddress.fromBs58String(apiAddress);
-                apiAddress = accAddr.toString();
-            } catch (e) {
-                // Use as-is
-            }
-        }
+        // Initialize Endless client
+        const config = new EndlessConfig({ network: network.key });
+        const endless = new Endless(config);
 
-        const url = `${network.rpcUrl}/accounts/${apiAddress}/resources`;
-        const res = await fetch(url);
+        // Fetch balance using SDK helper
+        // getAccountEDSAmount handles both legacy and modern fungible asset structures
+        const amount = await endless.getAccountEDSAmount({ accountAddress: state.walletAddress });
 
-        if (!res.ok) {
-            els.walletBalance.textContent = '0.00 EDS';
-            return;
-        }
-
-        const resources = await res.json();
-        let balance = 0;
-
-        for (const r of resources) {
-            // Check for CoinStore<EndlessCoin>
-            if (r.type && r.type.includes('CoinStore') && r.type.includes('EndlessCoin')) {
-                balance = parseInt(r.data?.coin?.value || '0', 10);
-                break;
-            }
-            // Also check for fungible store pattern
-            if (r.type && r.type.includes('fungible_asset') && r.data?.balance) {
-                balance = parseInt(r.data.balance, 10);
-            }
-        }
-
-        els.walletBalance.textContent = `${formatEDS(balance)} EDS`;
+        els.walletBalance.textContent = `${Number(amount).toFixed(4)} EDS`;
     } catch (err) {
         console.error('Balance fetch error:', err);
         els.walletBalance.textContent = '— EDS';
