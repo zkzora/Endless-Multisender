@@ -9,7 +9,8 @@
     content="Send $EDS tokens to multiple wallet addresses at once on the Endless blockchain. Fast, secure, and gas-efficient batch transfers." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+  <link
+    href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
     rel="stylesheet" />
   <link rel="stylesheet" href="/style.css" />
   <link rel="icon" type="image/svg+xml"
@@ -17,11 +18,18 @@
 </head>
 
 <body>
-  <!-- Animated background -->
-  <div class="bg-grid"></div>
-  <div class="bg-glow bg-glow-1"></div>
-  <div class="bg-glow bg-glow-2"></div>
-  <div class="bg-glow bg-glow-3"></div>
+  <!-- Light Beam Background -->
+  <div class="light-beam-bg">
+    <div class="shape-wrapper">
+      <div class="beam beam-1"></div>
+    </div>
+    <div class="shape-wrapper">
+      <div class="beam beam-2"></div>
+    </div>
+    <div class="shape-wrapper">
+      <div class="beam beam-3"></div>
+    </div>
+  </div>
 
   <!-- Header -->
   <header id="header">
@@ -66,9 +74,12 @@
   <!-- Main Content -->
   <main id="app">
     <!-- Hero Section -->
-    <section class="hero">
+    <section class="hero left-aligned">
+      <div class="hero-badge">
+        <span>Endless ecosystem</span>
+      </div>
       <h1 class="hero-title">
-        Batch Send <span class="gradient-text">$EDS</span> Tokens
+        Batch send your<br />$EDS in real-time
       </h1>
       <p class="hero-subtitle">
         Send Endless tokens to multiple wallets in one go. Fast, secure, and efficient.
@@ -236,12 +247,51 @@
     </section>
   </main>
 
+  <!-- Scroll Transition Flare -->
+  <div class="scroll-flare" id="scrollFlare"></div>
+
   <!-- Footer -->
   <footer class="footer">
-    <p>Built for the <a href="https://endless.link" target="_blank" rel="noopener">Endless</a> ecosystem &mdash; Powered
-      by $EDS</p>
-    <p class="footer-sub">build by <span class="accent-2">zkzora</span> &mdash; <a href="https://x.com/zk_zora"
-        target="_blank" rel="noopener">X.com/zk_zora</a></p>
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <div class="logo">
+          <div class="logo-icon">
+            <img src="/logo.png" alt="Endless Logo" width="32" height="32" />
+          </div>
+          <span class="logo-text">Endless <span class="logo-accent">Multisender</span></span>
+        </div>
+        <p class="footer-copyright">© Endless Protocol 2025</p>
+        <div class="footer-socials">
+          <a href="https://x.com/zk_zora" target="_blank" rel="noopener" class="social-link">X</a>
+          <a href="#" class="social-link">Discord</a>
+          <a href="#" class="social-link">Telegram</a>
+        </div>
+      </div>
+
+      <div class="footer-links">
+        <div class="footer-col">
+          <h4>Build</h4>
+          <a href="#">Docs</a>
+          <a href="#">GitHub</a>
+        </div>
+        <div class="footer-col">
+          <h4>Tools</h4>
+          <a href="#">Explorer</a>
+          <a href="#">Bridge</a>
+          <a href="#">Staking</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="massive-logo-container">
+      <div class="massive-logo">ENDLESS</div>
+    </div>
+
+    <div class="footer-bottom">
+      <p>Built for the <a href="https://endless.link" target="_blank" rel="noopener">Endless</a> ecosystem &mdash;
+        Powered by $EDS</p>
+      <p class="footer-sub">build by <span class="accent-2">zkzora</span></p>
+    </div>
   </footer>
 
   <!-- Toast container -->

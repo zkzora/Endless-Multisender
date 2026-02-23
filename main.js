@@ -546,9 +546,87 @@ function handleFileUpload(e) {
     reader.readAsText(file);
 }
 
+// ===== INTERACTIVE UX (TILT & PARALLAX) =====
+function initInteractiveUX() {
+    // Entrance Animations
+    const elements = document.querySelectorAll('.card, .hero, .wallet-info');
+    elements.forEach((el, i) => {
+        el.style.opacity = '0';
+        el.style.transform = 'translateY(20px)';
+        setTimeout(() => {
+            el.style.transition = 'opacity 0.6s ease, transform 0.6s cubic-bezier(0.25, 0.8, 0.25, 1)';
+            el.style.opacity = '1';
+            el.style.transform = 'translateY(0)';
+
+            setTimeout(() => {
+                // Clear inline transition so CSS hover handles it from here
+                if (!el.classList.contains('card')) {
+                    el.style.transition = '';
+                } else {
+                    el.style.transition = 'transform 0.5s cubic-bezier(0.25, 0.8, 0.25, 1), box-shadow 0.4s ease, border-color 0.4s ease';
+                }
+            }, 600);
+        }, 100 + (i * 100));
+    });
+
+    // Parallax and Tilt
+    const cards = document.querySelectorAll('.card');
+    const shapes = document.querySelectorAll('.shape-wrapper');
+
+    document.addEventListener('mousemove', (e) => {
+        const mx = e.clientX;
+        const my = e.clientY;
+
+        // Background Shapes Parallax
+        const pctX = (mx / window.innerWidth) - 0.5;
+        const pctY = (my / window.innerHeight) - 0.5;
+
+        shapes.forEach((wrapper, index) => {
+            const depth = (index + 1) * 35;
+            const moveX = pctX * depth;
+            const moveY = pctY * depth;
+            wrapper.style.transform = `translate3d(${moveX}px, ${moveY}px, 0)`;
+        });
+
+        // Card hover inner glow & tilt
+        cards.forEach(card => {
+            const rect = card.getBoundingClientRect();
+
+            const isHovered = (
+                mx >= rect.left && mx <= rect.right &&
+                my >= rect.top && my <= rect.bottom
+            );
+
+            if (isHovered) {
+                const cardX = mx - rect.left;
+                const cardY = my - rect.top;
+
+                card.style.setProperty('--mouse-x', `${cardX}px`);
+                card.style.setProperty('--mouse-y', `${cardY}px`);
+
+                const centerX = rect.left + rect.width / 2;
+                const centerY = rect.top + rect.height / 2;
+
+                const rotateX = ((centerY - my) / (rect.height / 2)) * 3;
+                const rotateY = ((mx - centerX) / (rect.width / 2)) * 3;
+
+                card.style.transition = 'box-shadow 0.4s ease, border-color 0.4s ease';
+                card.style.transform = `perspective(1200px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.01, 1.01, 1.01)`;
+                card.classList.add('is-hovered');
+            } else {
+                card.style.transition = 'transform 0.5s cubic-bezier(0.25, 0.8, 0.25, 1), box-shadow 0.4s ease, border-color 0.4s ease';
+                card.style.transform = '';
+                card.classList.remove('is-hovered');
+            }
+        });
+    });
+}
+
 // ===== INIT =====
 function init() {
     cacheDom();
+
+    initInteractiveUX();
 
     // Connect wallet
     els.connectBtn.addEventListener('click', connectWallet);
